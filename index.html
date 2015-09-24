@@ -242,36 +242,67 @@
 <!-- Instagram Image Scraper   -->
 
   <script type="text/javascript">
-    var teamAfeed = new Instafeed({
-        target: "teamAfeed",
+    var BRTteamANeighbor = new Instafeed({
+        target: "BRTteamANeighbor",
         get: 'tagged',
-        tagName: 'BosBRTteamA',
+        tagName: 'BRTteamANeighbor',
         clientId: '8e3d2c85b6a14c16a09471396ee8faa6',
         resolution: 'low_resolution',
-        limit: 3
+        limit: 1
     });
 
-    var teamBfeed = new Instafeed({
-        target: "teamBfeed",
+    var BRTteamAStreet = new Instafeed({
+        target: "BRTteamAStreet",
         get: 'tagged',
-        tagName: 'BosBRTteamB',
+        tagName: 'BRTteamAStreet',
         clientId: '8e3d2c85b6a14c16a09471396ee8faa6',
         resolution: 'low_resolution',
-        limit: 3
+        limit: 1
     });
 
-    var teamCfeed = new Instafeed({
-        target: "teamCfeed",
+    var BRTteamBNeighbor = new Instafeed({
+        target: "BRTteamBNeighbor",
         get: 'tagged',
-        tagName: 'BosBRTteamC',
+        tagName: 'BRTteamBNeighbor',
         clientId: '8e3d2c85b6a14c16a09471396ee8faa6',
         resolution: 'low_resolution',
-        limit: 3
+        limit: 1
     });
 
-    teamAfeed.run();
-    teamBfeed.run();
-    teamCfeed.run();
+    var BRTteamBStreet = new Instafeed({
+        target: "BRTteamBStreet",
+        get: 'tagged',
+        tagName: 'BRTteamBStreet',
+        clientId: '8e3d2c85b6a14c16a09471396ee8faa6',
+        resolution: 'low_resolution',
+        limit: 1
+    });
+
+    var BRTteamCNeighbor = new Instafeed({
+        target: "BRTteamCNeighbor",
+        get: 'tagged',
+        tagName: 'BRTteamCNeighbor',
+        clientId: '8e3d2c85b6a14c16a09471396ee8faa6',
+        resolution: 'low_resolution',
+        limit: 1
+    });
+
+    var BRTteamCStreet = new Instafeed({
+        target: "BRTteamCStreet",
+        get: 'tagged',
+        tagName: 'BRTteamCStreet',
+        clientId: '8e3d2c85b6a14c16a09471396ee8faa6',
+        resolution: 'low_resolution',
+        limit: 1
+    });
+
+    BRTteamANeighbor.run();
+    BRTteamAStreet.run();
+    BRTteamBNeighbor.run();
+    BRTteamBStreet.run();
+    BRTteamCMeighbor.run();
+    BRTteamCStreet.run();
+
 
 
   </script>
@@ -282,36 +313,40 @@
 <body>
   <h1 style="font-weight: 200; margin-top: -10px; background-color: "> Scoreboard  |  BostonBRT   <span style="font-size: .5em">COMMUNITY CO-CREATION WORKSHOP @ROXBURY INNOVATION CENTER, BOSTON | OCT 2015</span> </h1>
   <p></p>
-  <div class="col-md-3">
+  <div class="col-md-4">
     <h3 style="font-weight: 800">Region</h3>
       <div class="reg-container"></div>
-    <h3 style="font-weight: 800">Neighborhood</h3>
+    <h3 style="font-weight: 800">Neighborhood <span style="font-weight:400; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteam [team] Neighbor</span> </h3>
+    
       <div class="neb-container"></div>
-    <h3 style="font-weight: 800">Street</h3>
+    <h3 style="font-weight: 800">Street <span style="font-weight:400; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteam [team] Street</span></h3>
       <div class="st-container"></div>
   </div>
 
   <div class="col-md-3">
     <h3>Team A  
-      <span style="color:#FFD700; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamA</span>
+     <!--  <span style="color:#FFD700; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteamANeighbor</span> -->
     </h3>
     <div id="mapA" style="width: 320px; height: 300px"></div>
-    <div id="teamAfeed" style="padding-top: 0px"></div>
+    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
   </div>
   <div class="col-md-3">
     <h3>Team B
-      <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span>
+      <!-- <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span> -->
     </h3>
     <div id="mapB" style="width: 320px; height: 300px"></div>
-    <div id="teamBfeed" style="padding-top: 0px"></div>
+    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
   </div>
-  <div class="col-md-3">
+<!--   <div class="col-md-3">
     <h3>Team C
       <span style="color:gray; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamC</span>
     </h3>
     <div id="mapC" style="width: 320px; height: 300px"></div>
-    <div id="teamCfeed" style="padding-top: 0px"></div>
-  </div>
+    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
+  </div> -->
   
 
  <script>
