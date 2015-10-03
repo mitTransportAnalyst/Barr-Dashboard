@@ -33,7 +33,7 @@
 
     .chart .label {
       fill: black;
-      font: 14px 'Open Sans';
+      font: 12px 'Open Sans';
       text-anchor: end;
     }
 
@@ -253,14 +253,33 @@ var data = {
     ]
 };
 
+var neb_data = {
+  labels: [
+    'Avg Car Speed', 'Avg Bus Speed', 'Car Shifted (per 30min)',
+    'Transfers to/from Blue Hill Route (per day)', 'Dedicated Lanes (miles)', 'Passengers in New Dedicated Lanes', 'Parking Spaces Removed', 'Carbon Dioxide (pounds)', 'Other Air Pollutants (pounds)', 'Cost'
+  ],
+  series: [
+    {
+      label: 'Team A',
+      values: [4, 8, 15, 16, 4, 8, 15, 16, 4, 8, 15, 16, 4, 8, 15, 16]
+    },
+    {
+      label: 'Team B',
+      values: [12, 43, 22, 11, 4, 8, 15, 16,4, 8, 15, 16,4, 8, 15, 16]
+    },
+    ]
+};
+
 var chartWidth       = 300,
-    barHeight        = 20,
+    barHeight        = 12,
     groupHeight      = barHeight * data.series.length,
-    gapBetweenGroups = 10,
-    spaceForLabels   = 130,
-    spaceForLegend   = 100;
+    gapBetweenGroups = 5,
+    spaceForLabels   = 250,
+    spaceForLegend   = 0;
 
 // Zip the series data together (first values, second values, etc.)
+
+var data = neb_data;
 var zippedData = [];
 for (var i=0; i<data.labels.length; i++) {
   for (var j=0; j<data.series.length; j++) {
@@ -286,7 +305,7 @@ var yAxis = d3.svg.axis()
     .orient("left");
 
 // Specify the chart area and dimensions
-var chart = d3.select(".reg-chart")
+var chart = d3.select(".neb-chart")
     .append("svg")
     .attr("width", spaceForLabels + chartWidth + spaceForLegend)
     .attr("height", chartHeight);
