@@ -2,6 +2,8 @@
 <html>
 <meta charset="utf-8">
 <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.5.0/pure-min.css">
+<link rel="stylesheet" href="radar-chart.css">
+
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 
@@ -17,50 +19,91 @@
       color: Gray;
       padding: 20px;
     }
-    
-    .chart .legend {
-      fill: black;
-      font: 14px 'Open Sans';
-      text-anchor: start;
-      font-size: 12px;
+    .radar-chart .area {
+      fill-opacity: 0.7;
+    }
+    .radar-chart.focus .area {
+      fill-opacity: 0.3;
+    }
+    .radar-chart.focus .area.focused {
+      fill-opacity: 0.9;
+    }
+    .area.teamA, .teamA .circle {
+      fill: #FFD700;
+      stroke: none;
+    }
+    .area.teamB, .teamB .circle {
+      fill: #ADD8E6;
+      stroke: none;
     }
 
-    .chart text {
-      fill: white;
-      font: 10px sans-serif;
-      text-anchor: end;
-    }
-
-    .chart .label {
-      fill: black;
-      font: 14px 'Open Sans';
-      text-anchor: end;
-    }
-
-    .bar:hover {
-      fill: brown;
-    }
-
-    .axis path,
-    .axis line {
-      fill: none;
-      stroke: #000;
-      shape-rendering: crispEdges;
-    }
 
 
   </style>
 
   <script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
+  <script type="text/javascript" src="radar-chart.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+  <script src="load-image.all.min.js"></script>
   <script type="text/javascript" src="instafeed.min.js"></script>
+
   <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+
   <script src="jquery-1.11.2.min.js"></script>
 
 
-<!-- Random Data Generator  -->
-  <script type="text/javascript"> 
+  <script type="text/javascript">
+    RadarChart.defaultConfig.color = function() {};
+    RadarChart.defaultConfig.radius = 3;
+  </script>
+
+  <script type="text/javascript">
+    var data = [
+      {
+        className: 'teamA', // optional can be used for styling
+        axes: [
+          {axis: "Job Access", value: 13}, 
+          {axis: "Comfort", value: 1}, 
+          {axis: "Reliability", value: 2},
+          {axis: "Opex Effic.", value: 5},  
+          {axis: "Capex Effic.", value: 4}  
+        ]
+      },
+      {
+        className: 'teamB',
+        axes: [
+          {axis: "Job Access", value: 1}, 
+          {axis: "Comfort", value: 6}, 
+          {axis: "Reliability", value: 2},
+          {axis: "Opex Effic.", value: 1},  
+          {axis: "Capex Effic.", value: 9}  
+        ]
+      }
+    ];
+
+    var regData = [
+      {
+        className: 'teamA', // optional can be used for styling
+        axes: [
+          {axis: "Job Access", value: 1}, 
+          {axis: "Comfort", value: 6}, 
+          {axis: "Reliability", value: 2},
+          {axis: "Opex Effic.", value: 1},  
+          {axis: "Capex Effic.", value: 9}  
+        ]
+      },
+      {
+        className: 'teamB',
+        axes: [
+          {axis: "Job Access", value: 13}, 
+          {axis: "Comfort", value: 1}, 
+          {axis: "Reliability", value: 2},
+          {axis: "Opex Effic.", value: 5},  
+          {axis: "Capex Effic.", value: 4}           
+        ]
+      }
+    ];
 
     // replace this with data reader for each scale
     function randomDataset() {
@@ -76,8 +119,6 @@
 
   </script>
 
-
-<!-- Leaflet Map --> 
 
 <script>
 
@@ -192,200 +233,11 @@
   
 </script>
 
-  
-
-</head>
-
-<body>
-
-  <h1 style="font-weight: 200; margin-top: -10px; background-color: "> Scoreboard  |  BostonBRT   <span style="font-size: .5em">COMMUNITY CO-CREATION WORKSHOP @ROXBURY INNOVATION CENTER, BOSTON | OCT 2015</span> </h1>
-  <p></p>
-  <div class="col-md-5">
-    <h3 style="font-weight: 800">Region</h3>
-    
-    <div class="chart reg-chart"></div>
-    
-    <h3 style="font-weight: 800">Neighborhood <span style="font-weight:400; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteam [team] Neighbor</span> </h3>
-    
-    <div class="chart neb-chart"></div>
-
-    <h3 style="font-weight: 800">Street <span style="font-weight:400; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteam [team] Street</span></h3>
-    <div class="st-container"></div>
-  </div>
-
-  <div class="col-md-3">
-    <h3>Team A  
-     <!--  <span style="color:#FFD700; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteamANeighbor</span> -->
-    </h3>
-    <div id="mapA" style="width: 320px; height: 300px"></div>
-    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
-    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
-  </div>
-  <div class="col-md-3">
-    <h3>Team B
-      <!-- <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span> -->
-    </h3>
-    <div id="mapB" style="width: 320px; height: 300px"></div>
-    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
-    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
-  </div>
- 
-  
-
-
-<!-- Neigborhood Bar Charts -->
-
-<script>
-var data = {
-  labels: [
-    'Reliability', 'Station Comfort', 'Construction Cost',
-    'Operating Cost'
-  ],
-  series: [
-    {
-      label: 'Team A',
-      values: [4, 8, 15, 16]
-    },
-    {
-      label: 'Team B',
-      values: [12, 43, 22, 11]
-    },
-    ]
-};
-
-var chartWidth       = 300,
-    barHeight        = 20,
-    groupHeight      = barHeight * data.series.length,
-    gapBetweenGroups = 10,
-    spaceForLabels   = 130,
-    spaceForLegend   = 100;
-
-// Zip the series data together (first values, second values, etc.)
-var zippedData = [];
-for (var i=0; i<data.labels.length; i++) {
-  for (var j=0; j<data.series.length; j++) {
-    zippedData.push(data.series[j].values[i]);
-  }
-}
-
-// Color scale
-var color = d3.scale.category20();
-var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
-
-var x = d3.scale.linear()
-    .domain([0, d3.max(zippedData)])
-    .range([0, chartWidth]);
-
-var y = d3.scale.linear()
-    .range([chartHeight + gapBetweenGroups, 0]);
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .tickFormat('')
-    .tickSize(0)
-    .orient("left");
-
-// Specify the chart area and dimensions
-var chart = d3.select(".reg-chart")
-    .append("svg")
-    .attr("width", spaceForLabels + chartWidth + spaceForLegend)
-    .attr("height", chartHeight);
-
-// Create bars
-var bar = chart.selectAll("g")
-    .data(zippedData)
-    .enter().append("g")
-    .attr("transform", function(d, i) {
-      return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i/data.series.length))) + ")";
-    });
-
-// Create rectangles of the correct width
-bar.append("rect")
-    .attr("fill", function(d,i) { return color(i % data.series.length); })
-    .attr("class", "bar")
-    .attr("width", x)
-    .attr("height", barHeight - 1);
-
-// Add text label in bar
-bar.append("text")
-    .attr("x", function(d) { return x(d) - 3; })
-    .attr("y", barHeight / 2)
-    .attr("fill", "red")
-    .attr("dy", ".35em")
-    .text(function(d) { return d; });
-
-// Draw labels
-bar.append("text")
-    .attr("class", "label")
-    .attr("x", function(d) { return - 10; })
-    .attr("y", groupHeight / 2)
-    .attr("dy", ".35em")
-    .text(function(d,i) {
-      if (i % data.series.length === 0)
-        return data.labels[Math.floor(i/data.series.length)];
-      else
-        return ""});
-
-chart.append("g")
-      .attr("class", "y axis")
-      .attr("transform", "translate(" + spaceForLabels + ", " + -gapBetweenGroups/2 + ")")
-      .call(yAxis);
-
-// Draw legend
-var legendRectSize = 18,
-    legendSpacing  = 4;
-
-var legend = chart.selectAll('.legend')
-    .data(data.series)
-    .enter()
-    .append('g')
-    .attr('transform', function (d, i) {
-        var height = legendRectSize + legendSpacing;
-        var offset = -gapBetweenGroups/2;
-        var horz = spaceForLabels + chartWidth + 40 - legendRectSize;
-        var vert = i * height - offset;
-        return 'translate(' + horz + ',' + vert + ')';
-    });
-
-legend.append('rect')
-    .attr('width', legendRectSize)
-    .attr('height', legendRectSize)
-    .style('fill', function (d, i) { return color(i); })
-    .style('stroke', function (d, i) { return color(i); });
-
-legend.append('text')
-    .attr('class', 'legend')
-    .attr('x', legendRectSize + legendSpacing)
-    .attr('y', legendRectSize - legendSpacing)
-    .text(function (d) { return d.label; });
-
-</script>
-
-
 <!-- Leaflet Maps -->
 
-<script>
-    var mapZoom = 12;
-    var mapCenter = [42.349791, -71.078016];
-    
 
-    // Map A
-    var mapA = L.map('mapA',{ center: mapCenter, zoom: mapZoom, zoomControl: false, attributionControl: false});
-              L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapA);
-    
 
-    // Map B
-    var mapB = L.map('mapB',{ center: mapCenter, zoom: mapZoom, zoomControl: false,  attributionControl: false});
-              L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapB);
-    
-
-    // Map C
-    var mapC = L.map('mapC',{ center: mapCenter, zoom: mapZoom, zoomControl: false,  attributionControl: false});
-              L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapC);
-     
-
-</script>
-
+ 
 
 <!-- Instagram Image Scraper   -->
 
@@ -451,8 +303,86 @@ legend.append('text')
     BRTteamCMeighbor.run();
     BRTteamCStreet.run();
 
+
+
   </script>
 
+
+</head>
+
+<body>
+  <h1 style="font-weight: 200; margin-top: -10px; background-color: "> Scoreboard  |  BostonBRT   <span style="font-size: .5em">COMMUNITY CO-CREATION WORKSHOP @ROXBURY INNOVATION CENTER, BOSTON | OCT 2015</span> </h1>
+  <p></p>
+  <div class="col-md-4">
+    <h3 style="font-weight: 800">Region</h3>
+      <div class="reg-container"></div>
+    <h3 style="font-weight: 800">Neighborhood <span style="font-weight:400; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteam [team] Neighbor</span> </h3>
+    
+      <div class="neb-container"></div>
+    <h3 style="font-weight: 800">Street <span style="font-weight:400; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteam [team] Street</span></h3>
+      <div class="st-container"></div>
+  </div>
+
+  <div class="col-md-3">
+    <h3>Team A  
+     <!--  <span style="color:#FFD700; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteamANeighbor</span> -->
+    </h3>
+    <div id="mapA" style="width: 320px; height: 300px"></div>
+    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
+  </div>
+  <div class="col-md-3">
+    <h3>Team B
+      <!-- <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span> -->
+    </h3>
+    <div id="mapB" style="width: 320px; height: 300px"></div>
+    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
+  </div>
+<!--   <div class="col-md-3">
+    <h3>Team C
+      <span style="color:gray; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamC</span>
+    </h3>
+    <div id="mapC" style="width: 320px; height: 300px"></div>
+    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
+  </div> -->
+  
+
+ <script>
+    var mapZoom = 12;
+    var mapCenter = [42.349791, -71.078016];
+    
+
+    // Map A
+    var mapA = L.map('mapA',{ center: mapCenter, zoom: mapZoom, zoomControl: false, attributionControl: false});
+              L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapA);
+    
+
+    // Map B
+    var mapB = L.map('mapB',{ center: mapCenter, zoom: mapZoom, zoomControl: false,  attributionControl: false});
+              L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapB);
+    
+
+    // Map C
+    var mapC = L.map('mapC',{ center: mapCenter, zoom: mapZoom, zoomControl: false,  attributionControl: false});
+              L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapC);
+     
+
+</script>
+
+  
+
+
+  <script type="text/javascript">
+    RadarChart.defaultConfig.levelTick = true;
+    RadarChart.defaultConfig.w = 270;
+    RadarChart.defaultConfig.h = 270;
+    RadarChart.draw(".reg-container", randomDataset());
+    RadarChart.draw(".neb-container", regData);
+    RadarChart.draw(".st-container", data);
+
+  </script>
 
 
 
