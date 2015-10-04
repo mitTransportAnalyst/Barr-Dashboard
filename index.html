@@ -80,119 +80,164 @@
 <!-- Leaflet Map --> 
 
 <script>
+  
+  var showStopsOnMap = function(stops, map) {
+    var stopTypeSizes = {0: 60, 1: 90, 2: 120};
+    var circleList = [];
+    var stationNameList = [];
 
- var getStops = function (url, cb) {
-   
-  $.getJSON(url, function(data) {
+    stops.eachLayer(function (marker) {
+      var stationColor = marker.options.base.line,
+          stationLatLng = [marker._latlng.lat, marker._latlng.lng],
+          stationStop = stopTypeSizes[marker.options.base.stopType],
+          stationName = marker.options.base.station,
+          stationNamePopup = L.popup({
+            closeButton: false,
+            className: 'station-sign'
+          }).setContent('<p style="background-color:'
+          +stationColor+';">'+stationName+'</p><br><p style="background-color: white;"></p>');
+    
+      circleList.push(L.circle(stationLatLng, stationStop, {
+        stroke: false,
+        fillColor: stationColor,
+        fillOpacity: 1.0,
+      }).bindPopup(stationNamePopup));
+    });
+
+    subStopsLayer = L.layerGroup(circleList);
+    subStopsLayer.addTo(map);
+  };
+
+  var showLinesOnMap = function(lines, map) {
+    lines.addTo(map);
+  };
+
+  var getFootPrint = function(url, cb) {
+    $.getJSON(url, function(data) {
+      var corridors = data[Object.keys(data)[0]]["sel"]
+      cb(corridors);
+    });
+  };
+
+  var getStops = function (url, cb) {
+    $.getJSON(url, function(data) {
 
       var stopList = [];
+
+      // maps routeId to route specific stopList
+      var routeDict = {};
 
       for (var i=0; i<data.features.length; i++) {
         var stop = data.features[i];
 
         if (stop.properties.stopId) {
           var stopId = stop.properties.stopId;
-          stop.properties['routeId'] = stopId.substr(stopId.indexOf('rte-')+4);
+          var routeId = stopId.split("-").pop();
+          stop.properties['routeId'] = routeId;
         }
 
-        stopList.push(L.circle([stop.geometry.coordinates[1], stop.geometry.coordinates[0]], 0, {
+        var leafletCircle = L.circle([stop.geometry.coordinates[1], stop.geometry.coordinates[0]], 0, {
           stroke: false,
           fillOpacity: 0.0,
           base: stop.properties
-        }));
+        });
+
+        // Push to joint stopList
+        stopList.push(leafletCircle);
+
+        // Push to route specific stopList
+        if (stop.properties.routeId) {
+          var routeId = stop.properties.routeId;
+          if (routeId in routeDict) {
+            routeDict[routeId].push(leafletCircle);
+          } else {
+            routeDict[routeId] = [leafletCircle]
+          }
+        }
       };
 
-      var stopsLayer = L.layerGroup(stopList);
-      cb(stopsLayer);
+      // var stopsLayer = L.layerGroup(stopList);
+      // cb(stopsLayer);
+      if (Object.keys(routeDict).length > 0) {
+        cb(routeDict);
+      } else {
+        var stopsLayer = L.layerGroup(stopList);
+        cb(stopsLayer);
+      }
+      
     });
   };
 
-   getStops('geojson/stations.geojson', function (stops) {
-      var stopTypeSizes = {0: 60, 1: 90, 2: 120};
-      var circleList = [];
-      var stationNameList = [];
+  var getLines = function(url, callback) {
+    $.getJSON(url, function(data) {
 
-      stops.eachLayer(function (marker) {
-        var stationColor = marker.options.base.line,
-            stationLatLng = [marker._latlng.lat, marker._latlng.lng],
-            stationStop = stopTypeSizes[marker.options.base.stopType],
-            stationName = marker.options.base.station,
-            stationNamePopup = L.popup({
-        closeButton: false,
-        className: 'station-sign'
-      }).setContent('<p style="background-color:'
-            +stationColor+';">'+stationName+'</p><br><p style="background-color: white;"></p>')
-      
-        circleList.push(L.circle(stationLatLng, stationStop, {
-          stroke: false,
-          fillColor: stationColor,
-          fillOpacity: 1.0,
-    }).bindPopup(stationNamePopup));
-      
+      // maps routeId to proposed stop object (has line coordinates)
+      var proposedDict = {};
+
+      for (var i = 0; i < data.features.length; i++) {
+        var proposed = data.features[i];
+        var coordinates = proposed.geometry.coordinates.map(function(val) {
+          return [val[1], val[0]];
+        });
+        var proposedLine = L.polyline(coordinates, {
+          color: "#" + proposed.properties.routeColor, 
+          weight: 2, 
+          opacity: 1, 
+          base: proposed.properties
+        });
+
+        if (proposed.properties.routeId) {
+          var routeId = proposed.properties.routeId; 
+          if (routeId in proposedDict) {
+            proposedDict[routeId].push(proposedLine);
+          } else {
+            proposedDict[routeId] = [proposedLine]
+          }
+        }
+      }
+
+      callback(proposedDict);
     });
-      subStopsLayer = L.layerGroup(circleList);
-      subStopsLayer.addTo(mapA);
+  };
+
+  var getFootPrintStops = function(callback) {
+    getFootPrint('geojson/sessionSave.json', function(corridors) {
+      getLines('geojson/proposed.geojson', function(proposedDict) {
+        getStops('geojson/stops.geojson', function(routeDict) {
+          var corridorNames = Object.keys(corridors);
+          for (var i = 0; i < corridorNames.length; i++) {
+            var corridorName = corridorNames[i];
+            var corridor = corridors[corridorName];
+
+            if (corridor) {
+              var lines = proposedDict[corridor.routeId];
+              var stops = routeDict[corridor.routeId];
+
+              var stopsLayer = L.layerGroup(stops);
+              var linesLayer = L.layerGroup(lines);
+
+              showLinesOnMap(linesLayer, mapA);
+              showStopsOnMap(stopsLayer, mapA);
+            }
+          }
+        });
+      });
+    });
+  };
+
+  var getStaticStops = function() {
+    getStops('geojson/stations.geojson', function (stops) {
+      showStopsOnMap(stops, mapA);
     });
 
-  getStops('geojson/stations.geojson', function (stops) {
-      var stopTypeSizes = {0: 60, 1: 90, 2: 120};
-      var circleList = [];
-      var stationNameList = [];
-
-      stops.eachLayer(function (marker) {
-        var stationColor = marker.options.base.line,
-            stationLatLng = [marker._latlng.lat, marker._latlng.lng],
-            stationStop = stopTypeSizes[marker.options.base.stopType],
-            stationName = marker.options.base.station,
-            stationNamePopup = L.popup({
-        closeButton: false,
-        className: 'station-sign'
-      }).setContent('<p style="background-color:'
-            +stationColor+';">'+stationName+'</p><br><p style="background-color: white;"></p>')
-      
-        circleList.push(L.circle(stationLatLng, stationStop, {
-          stroke: false,
-          fillColor: stationColor,
-          fillOpacity: 1.0,
-    }).bindPopup(stationNamePopup));
-      
+    getStops('geojson/stations.geojson', function (stops) {
+      showStopsOnMap(stops, mapB);
     });
-      subStopsLayer = L.layerGroup(circleList);
-      subStopsLayer.addTo(mapB);
-    });
-    
-
-
-  getStops('geojson/stations.geojson', function (stops) {
-      var stopTypeSizes = {0: 60, 1: 90, 2: 120};
-      var circleList = [];
-      var stationNameList = [];
-
-      stops.eachLayer(function (marker) {
-        var stationColor = marker.options.base.line,
-            stationLatLng = [marker._latlng.lat, marker._latlng.lng],
-            stationStop = stopTypeSizes[marker.options.base.stopType],
-            stationName = marker.options.base.station,
-            stationNamePopup = L.popup({
-        closeButton: false,
-        className: 'station-sign'
-      }).setContent('<p style="background-color:'
-            +stationColor+';">'+stationName+'</p><br><p style="background-color: white;"></p>')
-      
-        circleList.push(L.circle(stationLatLng, stationStop, {
-          stroke: false,
-          fillColor: stationColor,
-          fillOpacity: 1.0,
-    }).bindPopup(stationNamePopup));
-      
-    });
-      subStopsLayer = L.layerGroup(circleList);
-      subStopsLayer.addTo(mapC);
-    });
+  };
   
+  getFootPrintStops();
+  // getStaticStops();
 </script>
-
-  
 
 </head>
 
