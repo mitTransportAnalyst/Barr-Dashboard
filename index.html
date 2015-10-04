@@ -260,15 +260,25 @@ var neb_data = {
   ],
   series: [
     {
+      label: 'Current',
+      values: [0,0,0,0,1,15000,9,164,1,8400]
+    },
+    {
       label: 'Team A',
-      values: [4, 8, 15, 16, 4, 8, 15, 16, 4, 8, 15, 16, 4, 8, 15, 16]
+      values: [7.67,5.45,7,3100,1.6,15000,0,6048,349,8400000]
     },
     {
       label: 'Team B',
-      values: [12, 43, 22, 11, 4, 8, 15, 16,4, 8, 15, 16,4, 8, 15, 16]
+      values: [13,25,7,3100,1.6,25000,0,6048,349,8400000]
     },
     ]
 };
+
+
+// var scaler = d3.scale.linear()
+//   .domain([0, d3.max(zippedData, function(d) { return d[0]; })])
+//   .range([0, chartWidth]);
+
 
 var chartWidth       = 300,
     barHeight        = 12,
@@ -283,17 +293,22 @@ var data = neb_data;
 var zippedData = [];
 for (var i=0; i<data.labels.length; i++) {
   for (var j=0; j<data.series.length; j++) {
+    // idx = data.series[j].values[i] / max()
     zippedData.push(data.series[j].values[i]);
   }
 }
+
+console.log(zippedData);
 
 // Color scale
 var color = d3.scale.category20();
 var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
 
-var x = d3.scale.linear()
-    .domain([0, d3.max(zippedData)])
+
+var x = d3.scale.log()
+    .domain([1, d3.max(zippedData)])
     .range([0, chartWidth]);
+
 
 var y = d3.scale.linear()
     .range([chartHeight + gapBetweenGroups, 0]);
