@@ -81,15 +81,15 @@
 
 <script>
   
-  var showStopsOnMap = function(stops, map) {
+  var showStopsOnMap = function(stops, map, corridorOptions) {
     var stopTypeSizes = {0: 60, 1: 90, 2: 120};
     var circleList = [];
     var stationNameList = [];
 
     stops.eachLayer(function (marker) {
-      var stationColor = marker.options.base.line,
+      var stationColor = corridorOptions.corridorColor || marker.options.base.line,
           stationLatLng = [marker._latlng.lat, marker._latlng.lng],
-          stationStop = stopTypeSizes[marker.options.base.stopType],
+          stationStop = stopTypeSizes[corridorOptions.stopType || marker.options.base.stopType],
           stationName = marker.options.base.station,
           stationNamePopup = L.popup({
             closeButton: false,
@@ -108,8 +108,32 @@
     subStopsLayer.addTo(map);
   };
 
-  var showLinesOnMap = function(lines, map) {
+  var showLinesOnMap = function(lines, map, corridorOptions) {
     lines.addTo(map);
+  };
+
+  var showAllStopsOnMap = function(corridors, proposedDict, routeDict) {
+    var corridorNames = Object.keys(corridors);
+      for (var i = 0; i < corridorNames.length; i++) {
+        var corridorName = corridorNames[i];
+        var corridor = corridors[corridorName];
+
+        if (corridor) {
+          var lines = proposedDict[corridor.routeId];
+          var stops = routeDict[corridor.routeId];
+
+          var stopsLayer = L.layerGroup(stops);
+          var linesLayer = L.layerGroup(lines);
+
+          var corridorOptions = {
+            corridorColor: "#" + lines[0].options.base.routeColor, 
+            stopType: corridor.station
+          };
+
+          showLinesOnMap(linesLayer, mapA, corridorOptions);
+          showStopsOnMap(stopsLayer, mapA, corridorOptions);
+        }
+      }
   };
 
   var getFootPrint = function(url, cb) {
@@ -204,22 +228,7 @@
     getFootPrint('geojson/sessionSave.json', function(corridors) {
       getLines('geojson/proposed.geojson', function(proposedDict) {
         getStops('geojson/stops.geojson', function(routeDict) {
-          var corridorNames = Object.keys(corridors);
-          for (var i = 0; i < corridorNames.length; i++) {
-            var corridorName = corridorNames[i];
-            var corridor = corridors[corridorName];
-
-            if (corridor) {
-              var lines = proposedDict[corridor.routeId];
-              var stops = routeDict[corridor.routeId];
-
-              var stopsLayer = L.layerGroup(stops);
-              var linesLayer = L.layerGroup(lines);
-
-              showLinesOnMap(linesLayer, mapA);
-              showStopsOnMap(stopsLayer, mapA);
-            }
-          }
+          showAllStopsOnMap(corridors, proposedDict, routeDict)
         });
       });
     });
