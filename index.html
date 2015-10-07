@@ -82,9 +82,9 @@
 <script>
   
   var showStopsOnMap = function(stops, map, corridorOptions) {
+    corridorOptions = corridorOptions || {};
     var stopTypeSizes = {0: 60, 1: 90, 2: 120};
     var circleList = [];
-    var stationNameList = [];
 
     stops.eachLayer(function (marker) {
       var stationColor = corridorOptions.corridorColor || marker.options.base.line,
@@ -109,10 +109,23 @@
   };
 
   var showLinesOnMap = function(lines, map, corridorOptions) {
-    lines.addTo(map);
+    corridorOptions = corridorOptions || {};
+    var lineList = [];
+
+    lines.eachLayer(function (marker) {
+      lineList.push(L.polyline(marker.getLatLngs(), {
+        color: "#" + marker.options.base.routeColor, 
+        weight: 2, 
+        opacity: 1, 
+        base: marker.options.base
+      }));
+    });
+
+    subLinesLayer = L.layerGroup(lineList);
+    subLinesLayer.addTo(map);
   };
 
-  var showAllStopsOnMap = function(corridors, proposedDict, routeDict) {
+  var showAllStopsOnMap = function(corridors, proposedDict, routeDict, map) {
     var corridorNames = Object.keys(corridors);
       for (var i = 0; i < corridorNames.length; i++) {
         var corridorName = corridorNames[i];
@@ -130,8 +143,8 @@
             stopType: corridor.station
           };
 
-          showLinesOnMap(linesLayer, mapA, corridorOptions);
-          showStopsOnMap(stopsLayer, mapA, corridorOptions);
+          showLinesOnMap(linesLayer, map, corridorOptions);
+          showStopsOnMap(stopsLayer, map, corridorOptions);
         }
       }
   };
@@ -225,11 +238,21 @@
   };
 
   var getFootPrintStops = function(callback) {
-    getFootPrint('geojson/sessionSave.json', function(corridors) {
-      getLines('geojson/proposed.geojson', function(proposedDict) {
-        getStops('geojson/stops.geojson', function(routeDict) {
-          showAllStopsOnMap(corridors, proposedDict, routeDict)
+    getLines('geojson/proposed.geojson', function(proposedDict) {
+      getStops('geojson/stops.geojson', function(routeDict) {
+
+        getFootPrint('geojson/sessionSave.json', function(corridorsA) {
+          showAllStopsOnMap(corridorsA, proposedDict, routeDict, mapA);
         });
+
+        getFootPrint('geojson/sessionSave(1).json', function(corridorsB) {
+          showAllStopsOnMap(corridorsB, proposedDict, routeDict, mapB);
+        });
+
+        getFootPrint('geojson/sessionSave(2).json', function(corridorsC) {
+          showAllStopsOnMap(corridorsC, proposedDict, routeDict, mapC); 
+        });
+
       });
     });
   };
@@ -282,8 +305,16 @@
       <!-- <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span> -->
     </h3>
     <div id="mapB" style="width: 320px; height: 300px"></div>
-    <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
-    <div id="BRTteamAStreet" style="padding-top: 0px"></div>
+    <div id="BRTteamBNeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamBStreet" style="padding-top: 0px"></div>
+  </div>
+  <div class="col-md-3">
+    <h3>Team C
+      <!-- <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span> -->
+    </h3>
+    <div id="mapC" style="width: 320px; height: 300px"></div>
+    <div id="BRTteamCNeighbor" style="padding-top: 0px"></div>
+    <div id="BRTteamCStreet" style="padding-top: 0px"></div>
   </div>
  
   
