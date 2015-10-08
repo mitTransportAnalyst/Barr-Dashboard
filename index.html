@@ -24,31 +24,25 @@
       text-anchor: start;
       font-size: 12px;
     }
-
     .chart text {
       fill: white;
       font: 10px sans-serif;
       text-anchor: end;
     }
-
     .chart .label {
       fill: black;
       font: 12px 'Open Sans';
       text-anchor: end;
     }
-
     .bar:hover {
       fill: brown;
     }
-
     .axis path,
     .axis line {
       fill: none;
       stroke: #000;
       shape-rendering: crispEdges;
     }
-
-
   </style>
 
   <script type="text/javascript" src="http://d3js.org/d3.v3.js"></script>
@@ -61,7 +55,6 @@
 
 <!-- Random Data Generator  -->
   <script type="text/javascript"> 
-
     // replace this with data reader for each scale
     function randomDataset() {
       return data.map(function(d) {
@@ -73,7 +66,6 @@
         };
       });
     }
-
   </script>
 
 
@@ -85,7 +77,6 @@
     corridorOptions = corridorOptions || {};
     var stopTypeSizes = {0: 60, 1: 90, 2: 120};
     var circleList = [];
-
     stops.eachLayer(function (marker) {
       var stationColor = corridorOptions.corridorColor || marker.options.base.line,
           stationLatLng = [marker._latlng.lat, marker._latlng.lng],
@@ -103,15 +94,12 @@
         fillOpacity: 1.0,
       }).bindPopup(stationNamePopup));
     });
-
     subStopsLayer = L.layerGroup(circleList);
     subStopsLayer.addTo(map);
   };
-
   var showLinesOnMap = function(lines, map, corridorOptions) {
     corridorOptions = corridorOptions || {};
     var lineList = [];
-
     lines.eachLayer(function (marker) {
       lineList.push(L.polyline(marker.getLatLngs(), {
         color: "#" + marker.options.base.routeColor, 
@@ -120,68 +108,53 @@
         base: marker.options.base
       }));
     });
-
     subLinesLayer = L.layerGroup(lineList);
     subLinesLayer.addTo(map);
   };
-
   var showAllStopsOnMap = function(corridors, proposedDict, routeDict, map) {
     var corridorNames = Object.keys(corridors);
       for (var i = 0; i < corridorNames.length; i++) {
         var corridorName = corridorNames[i];
         var corridor = corridors[corridorName];
-
         if (corridor) {
           var lines = proposedDict[corridor.routeId];
           var stops = routeDict[corridor.routeId];
-
           var stopsLayer = L.layerGroup(stops);
           var linesLayer = L.layerGroup(lines);
-
           var corridorOptions = {
             corridorColor: "#" + lines[0].options.base.routeColor, 
             stopType: corridor.station
           };
-
           showLinesOnMap(linesLayer, map, corridorOptions);
           showStopsOnMap(stopsLayer, map, corridorOptions);
         }
       }
   };
-
   var getFootPrint = function(url, cb) {
     $.getJSON(url, function(data) {
       var corridors = data[Object.keys(data)[0]]["sel"]
       cb(corridors);
     });
   };
-
   var getStops = function (url, cb) {
     $.getJSON(url, function(data) {
-
       var stopList = [];
-
       // maps routeId to route specific stopList
       var routeDict = {};
-
       for (var i=0; i<data.features.length; i++) {
         var stop = data.features[i];
-
         if (stop.properties.stopId) {
           var stopId = stop.properties.stopId;
           var routeId = stopId.split("-").pop();
           stop.properties['routeId'] = routeId;
         }
-
         var leafletCircle = L.circle([stop.geometry.coordinates[1], stop.geometry.coordinates[0]], 0, {
           stroke: false,
           fillOpacity: 0.0,
           base: stop.properties
         });
-
         // Push to joint stopList
         stopList.push(leafletCircle);
-
         // Push to route specific stopList
         if (stop.properties.routeId) {
           var routeId = stop.properties.routeId;
@@ -192,7 +165,6 @@
           }
         }
       };
-
       // var stopsLayer = L.layerGroup(stopList);
       // cb(stopsLayer);
       if (Object.keys(routeDict).length > 0) {
@@ -204,13 +176,10 @@
       
     });
   };
-
   var getLines = function(url, callback) {
     $.getJSON(url, function(data) {
-
       // maps routeId to proposed stop object (has line coordinates)
       var proposedDict = {};
-
       for (var i = 0; i < data.features.length; i++) {
         var proposed = data.features[i];
         var coordinates = proposed.geometry.coordinates.map(function(val) {
@@ -222,7 +191,6 @@
           opacity: 1, 
           base: proposed.properties
         });
-
         if (proposed.properties.routeId) {
           var routeId = proposed.properties.routeId; 
           if (routeId in proposedDict) {
@@ -232,36 +200,28 @@
           }
         }
       }
-
       callback(proposedDict);
     });
   };
-
   var getFootPrintStops = function(callback) {
     getLines('geojson/proposed.geojson', function(proposedDict) {
       getStops('geojson/stops.geojson', function(routeDict) {
-
-        getFootPrint('geojson/sessionSave.json', function(corridorsA) {
+        getFootPrint('geojson/TeamA.json', function(corridorsA) {
           showAllStopsOnMap(corridorsA, proposedDict, routeDict, mapA);
         });
-
-        getFootPrint('geojson/sessionSave(1).json', function(corridorsB) {
+        getFootPrint('geojson/TeamB.json', function(corridorsB) {
           showAllStopsOnMap(corridorsB, proposedDict, routeDict, mapB);
         });
-
         getFootPrint('geojson/sessionSave(2).json', function(corridorsC) {
           showAllStopsOnMap(corridorsC, proposedDict, routeDict, mapC); 
         });
-
       });
     });
   };
-
   var getStaticStops = function() {
     getStops('geojson/stations.geojson', function (stops) {
       showStopsOnMap(stops, mapA);
     });
-
     getStops('geojson/stations.geojson', function (stops) {
       showStopsOnMap(stops, mapB);
     });
@@ -277,10 +237,10 @@
 
   <h1 style="font-weight: 200; margin-top: -10px; background-color: "> Scoreboard  |  BostonBRT   <span style="font-size: .5em">COMMUNITY CO-CREATION WORKSHOP @ROXBURY INNOVATION CENTER, BOSTON | OCT 2015</span> </h1>
   <p></p>
-  <div class="col-md-6">
+  <div class="col-md-5">
     <h3 style="font-weight: 800">Region</h3>
     
-    <div class="chart reg-chart" style="margin-bottom: 180px"></div>
+    <div class="chart reg-chart" style="margin-bottom: 300px"></div>
     
     <h3 style="font-weight: 800">Neighborhood <span style="font-weight:400; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteam [team] Neighbor</span> </h3>
     
@@ -294,7 +254,6 @@
 
   <div class="col-md-3">
     <h3>Team A  
-     <!--  <span style="color:#FFD700; font-size: .7em"><i class="fa fa-instagram"></i> #BRTteamANeighbor</span> -->
     </h3>
     <div id="mapA" style="width: 320px; height: 300px"></div>
     <div id="BRTteamANeighbor" style="padding-top: 0px"></div>
@@ -302,21 +261,23 @@
   </div>
   <div class="col-md-3">
     <h3>Team B
-      <!-- <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span> -->
+     
     </h3>
     <div id="mapB" style="width: 320px; height: 300px"></div>
     <div id="BRTteamBNeighbor" style="padding-top: 0px"></div>
     <div id="BRTteamBStreet" style="padding-top: 0px"></div>
   </div>
-  <div class="col-md-3">
+ 
+
+ <!--  <div class="col-md-3">
     <h3>Team C
-      <!-- <span style="color:#ADD8E6; font-size: .7em"><i class="fa fa-instagram"></i> #BosBRTteamB</span> -->
+      
     </h3>
     <div id="mapC" style="width: 320px; height: 300px"></div>
     <div id="BRTteamCNeighbor" style="padding-top: 0px"></div>
     <div id="BRTteamCStreet" style="padding-top: 0px"></div>
   </div>
- 
+  -->
   
 
 <!-- Data for Bar Chart  -->
@@ -329,62 +290,59 @@ var regData = {
     ],
     series: [
       {
-        label: 'Team A',
+        label: 'Team',
         values: [4, 8, 15, 16]
       },
       {
-        label: 'Team B',
+        label: 'Team',
         values: [12, 43, 22, 11]
       },
       ]
 };
-
 var nebData = {
   labels: [
     'Avg Car Speed', 'Avg Bus Speed', 'Car Shifted (per 30min)',
     'Transfers to/from Blue Hill Route (per day)', 'Dedicated Lanes (miles)', 'Passengers in New Dedicated Lanes', 'Parking Spaces Removed', 'Carbon Dioxide (pounds)', 'Other Air Pollutants (pounds)', 'Cost'
   ],
   series: [
+    // {
+    //   label: 'Current',
+    //   values: [0,0,0,0,1,15000,9,164,1,8400]
+    // },
     {
-      label: 'Current',
-      values: [0,0,0,0,1,15000,9,164,1,8400]
-    },
-    {
-      label: 'Team A',
+      label: 'Team',
       values: [7.67,5.45,7,3100,1.6,15000,0,6048,349,8400000]
     },
     {
-      label: 'Team B',
+      label: 'Team',
       values: [13,25,7,3100,1.6,25000,0,6048,349,8400000]
     },
     ]
 };
-
 var stData = {
   labels: [
     'Driving Time (Min)', 'Bus Ride Time (Min)', 'Time at Each Stop (Sec)', 'Parking Spaces', 'Bicycle Trips per Hour'
   ],
   series: [
+    // {
+    //   label: 'Current',
+    //   values: [20, 19, 30, 400, 25]
+    // },
     {
-      label: 'Current',
-      values: [20, 19, 30, 400, 25]
-    },
-    {
-      label: 'Upgraded Station',
+      label: 'Team',  //'Upgraded Station'
       values: [20, 17, 15, 400, 25]
     },
     {
-      label: 'Centered Station',
+      label: 'Team',  //Centered Station
       values: [25, 15, 15, 400, 25]
     },
     {
-      label: 'Centered Station + Bike Lane',
+      label: 'Team',  //Centered Station + Bike Lane
       values: [25, 15, 15, 200, 100]
     },
     
     ]
 };
-
 </script>
 
 
@@ -392,9 +350,7 @@ var stData = {
 
 <script>
 var drawChart = function(data, spot){
-
-
-  var chartWidth       = 300,
+  var chartWidth       = 180,
       barHeight        = 10,
       groupHeight      = barHeight * data.series.length,
       gapBetweenGroups = 5,
@@ -402,7 +358,6 @@ var drawChart = function(data, spot){
       spaceForLegend   = 200,
       legendRectSize   = 15,
       legendSpacing    = 4;
-
   var data = data;
   var zippedData = [];
   for (var i=0; i<data.labels.length; i++) {
@@ -410,33 +365,24 @@ var drawChart = function(data, spot){
       zippedData.push(data.series[j].values[i]);
     }
   }
-
-
   // Color scale
   var color = d3.scale.category20();
   var chartHeight = barHeight * zippedData.length + gapBetweenGroups * data.labels.length;
-
-
   var x = d3.scale.log()
       .domain([1, d3.max(zippedData)])
       .range([0, chartWidth]);
-
-
   var y = d3.scale.linear()
       .range([chartHeight + gapBetweenGroups, 0]);
-
   var yAxis = d3.svg.axis()
       .scale(y)
       .tickFormat('')
       .tickSize(0)
       .orient("left");
-
   // Specify the chart area and dimensions
   var chart = d3.select(spot)
       .append("svg")
       .attr("width", spaceForLabels + chartWidth + spaceForLegend)
       .attr("height", chartHeight);
-
   // Create bars
   var bar = chart.selectAll("g")
       .data(zippedData)
@@ -444,14 +390,12 @@ var drawChart = function(data, spot){
       .attr("transform", function(d, i) {
         return "translate(" + spaceForLabels + "," + (i * barHeight + gapBetweenGroups * (0.5 + Math.floor(i/data.series.length))) + ")";
       });
-
   // Create rectangles of the correct width
   bar.append("rect")
       .attr("fill", function(d,i) { return color(i % data.series.length); })
       .attr("class", "bar")
       .attr("width", x)
       .attr("height", barHeight - 1);
-
   // Add text label in bar
   bar.append("text")
       .attr("x", function(d) { return x(d) - 3; })
@@ -459,7 +403,6 @@ var drawChart = function(data, spot){
       .attr("fill", "red")
       .attr("dy", ".35em")
       .text(function(d) { return d; });
-
   // Draw labels
   bar.append("text")
       .attr("class", "label")
@@ -471,13 +414,10 @@ var drawChart = function(data, spot){
           return data.labels[Math.floor(i/data.series.length)];
         else
           return ""});
-
   chart.append("g")
         .attr("class", "y axis")
         .attr("transform", "translate(" + spaceForLabels + ", " + -gapBetweenGroups/2 + ")")
         .call(yAxis);
-
-
   var legend = chart.selectAll('.legend')
       .data(data.series)
       .enter()
@@ -489,26 +429,20 @@ var drawChart = function(data, spot){
           var vert = i * height - offset;
           return 'translate(' + horz + ',' + vert + ')';
       });
-
   legend.append('rect')
       .attr('width', legendRectSize)
       .attr('height', legendRectSize)
       .style('fill', function (d, i) { return color(i); })
       .style('stroke', function (d, i) { return color(i); });
-
   legend.append('text')
       .attr('class', 'legend')
       .attr('x', legendRectSize + legendSpacing)
       .attr('y', legendRectSize - legendSpacing)
       .text(function (d) { return d.label; });
-
 };
-
-drawChart(regData, ".reg-chart");
+//drawChart(regData, ".reg-chart");
 drawChart(nebData, ".neb-chart");
 drawChart(stData, ".st-chart");
-
-
 </script>
 
 
@@ -521,22 +455,18 @@ drawChart(stData, ".st-chart");
     var mapZoom = 12;
     var mapCenter = [42.349791, -71.078016];
     
-
     // Map A
     var mapA = L.map('mapA',{ center: mapCenter, zoom: mapZoom, zoomControl: false, attributionControl: false});
               L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapA);
     
-
     // Map B
     var mapB = L.map('mapB',{ center: mapCenter, zoom: mapZoom, zoomControl: false,  attributionControl: false});
               L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapB);
     
-
     // Map C
     var mapC = L.map('mapC',{ center: mapCenter, zoom: mapZoom, zoomControl: false,  attributionControl: false});
               L.tileLayer('http://openmapsurfer.uni-hd.de/tiles/roadsg/x={x}&y={y}&z={z}', {maxZoom:15, minZoom:12 }).addTo(mapC);
      
-
 </script>
 
 
@@ -551,7 +481,6 @@ drawChart(stData, ".st-chart");
         resolution: 'low_resolution',
         limit: 1
     });
-
     var BRTteamAStreet = new Instafeed({
         target: "BRTteamAStreet",
         get: 'tagged',
@@ -560,7 +489,6 @@ drawChart(stData, ".st-chart");
         resolution: 'low_resolution',
         limit: 1
     });
-
     var BRTteamBNeighbor = new Instafeed({
         target: "BRTteamBNeighbor",
         get: 'tagged',
@@ -569,7 +497,6 @@ drawChart(stData, ".st-chart");
         resolution: 'low_resolution',
         limit: 1
     });
-
     var BRTteamBStreet = new Instafeed({
         target: "BRTteamBStreet",
         get: 'tagged',
@@ -578,7 +505,6 @@ drawChart(stData, ".st-chart");
         resolution: 'low_resolution',
         limit: 1
     });
-
     var BRTteamCNeighbor = new Instafeed({
         target: "BRTteamCNeighbor",
         get: 'tagged',
@@ -587,7 +513,6 @@ drawChart(stData, ".st-chart");
         resolution: 'low_resolution',
         limit: 1
     });
-
     var BRTteamCStreet = new Instafeed({
         target: "BRTteamCStreet",
         get: 'tagged',
@@ -596,14 +521,12 @@ drawChart(stData, ".st-chart");
         resolution: 'low_resolution',
         limit: 1
     });
-
     BRTteamANeighbor.run();
     BRTteamAStreet.run();
     BRTteamBNeighbor.run();
     BRTteamBStreet.run();
     BRTteamCMeighbor.run();
     BRTteamCStreet.run();
-
   </script>
 
 
